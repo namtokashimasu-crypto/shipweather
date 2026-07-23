@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>埼玉発 配送天気＆危険度チェッカー</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 40px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: #ffffff;
+            padding: 20px 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* 発送元カード */
+        .origin-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .origin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .origin-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .ship-date-select {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #f1f5f9;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .origin-weather-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .temp-display {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .temp-main {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .temp-range {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* 基準注記 */
+        .baseline-info {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #1e40af;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        /* セクションヘッダー */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 配送先カード一覧 */
+        .cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dest-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dest-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .dest-name-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dest-region {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .dest-city {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .lead-time-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .dest-card-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .dest-weather-icon {
+            font-size: 1.8rem;
+        }
+
+        .dest-temp-box {
+            text-align: right;
+        }
+
+        .dest-max-temp {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .dest-min-temp {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 危険度判定バッジ */
+        .risk-badge {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .risk-level-0 { background-color: #10b981; } /* 正常: エメラルド */
+        .risk-level-1 { background-color: #f59e0b; } /* 注意: アンバー */
+        .risk-level-2 { background-color: #f97316; } /* 警戒: オレンジ */
+        .risk-level-3 { background-color: #ef4444; } /* 厳重警戒: レッド */
+        .risk-level-4 { background-color: #8b5cf6; } /* 危険: パープル */
+
+        .risk-advice {
+            font-size: 0.75rem;
+            font-weight: normal;
+            opacity: 0.95;
+            margin-top: 2px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📦 埼玉発 配送天気＆危険度</h1>
+        <p>発送日と到着地の予想気温（基準25℃）をリスク判定</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- 発送元情報 -->
+        <div class="origin-card">
+            <div class="origin-header">
+                <span class="origin-title">📍 発送元：埼玉県（さいたま市）</span>
+                <select id="shipDateSelect" class="ship-date-select" onchange="updateDashboard()">
+                    <option value="0">本日発送</option>
+                    <option value="1">明日発送</option>
+                    <option value="2">明々後日発送</option>
+                </select>
+            </div>
+            <div class="origin-weather-info" id="originWeather">
+                <div class="loading"><div class="spinner"></div>天気データ取得中...</div>
+            </div>
+        </div>
+
+        <!-- 判定基準メッセージ -->
+        <div class="baseline-info">
+            💡 <strong>判定基準（25℃目標）：</strong><br>
+            到着日の最高気温が25℃から±5℃乖離するごとに警戒レベルが上がります。保温・保冷資材の調整目安にご活用ください。
+        </div>
+
+        <div class="section-title">🚚 到着地の天気・気温と危険度</div>
+
+        <!-- 配送先一覧 -->
+        <div class="cards-grid" id="destGrid">
+            <div class="loading"><div class="spinner"></div>全国の天気予報を取得中...</div>
+        </div>
+
+        <footer>
+            Data provided by Open-Meteo API (Free & Commercial Use)
+        </footer>
+    </div>
+
+    <script>
+        // 配送先データ定義（緯度・経度・リードタイム）
+        const DESTINATIONS = [
+            { id: "sapporo", region: "北海道", city: "札幌", lat: 43.0621, lon: 141.3544, leadDays: 2 },
+            { id: "sendai", region: "東北", city: "仙台", lat: 38.2682, lon: 140.8694, leadDays: 1 },
+            { id: "tokyo", region: "関東", city: "東京", lat: 35.6895, lon: 139.6917, leadDays: 1 },
+            { id: "nagoya", region: "東海", city: "名古屋", lat: 35.1815, lon: 136.9064, leadDays: 1 },
+            { id: "osaka", region: "関西", city: "大阪", lat: 34.6937, lon: 135.5023, leadDays: 1 },
+            { id: "hiroshima", region: "中国", city: "広島", lat: 34.3853, lon: 132.4553, leadDays: 2 },
+            { id: "kochi", region: "四国", city: "高知", lat: 33.5597, lon: 133.5311, leadDays: 2 },
+            { id: "fukuoka", region: "九州", city: "福岡", lat: 33.5904, lon: 130.4017, leadDays: 2 },
+            { id: "kagoshima", region: "九州", city: "鹿児島", lat: 31.5966, lon: 130.5571, leadDays: 2 },
+            { id: "naha", region: "沖縄", city: "那覇", lat: 26.2124, lon: 127.6809, leadDays: 3 }
+        ];
+
+        const SAITAMA = { lat: 35.8617, lon: 139.6455 };
+
+        // WMO Weather interpretation codes (WW) to Emoji
+        function getWeatherIcon(code) {
+            if (code === 0) return "☀️";
+            if (code >= 1 && code <= 3) return "⛅";
+            if (code >= 45 && code <= 48) return "🌫️";
+            if (code >= 51 && code <= 67) return "🌧️";
+            if (code >= 71 && code <= 77) return "❄️";
+            if (code >= 80 && code <= 82) return "🌦️";
+            if (code >= 95) return "🌩️";
+            return "☁️";
+        }
+
+        // 25℃基準の危険度判定ロジック
+        function getRiskInfo(temp) {
+            const TARGET = 25;
+            const diff = Math.abs(temp - TARGET);
+            const isHigh = temp > TARGET;
+
+            if (diff <= 5) {
+                return {
+                    level: 0,
+                    label: "🟢 正常 (安全)",
+                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: "通常梱包で問題ありません。"
+                };
+            } else if (diff <= 10) {
+                return {
+                    level: 1,
+                    label: "🟡 注意",
+                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: isHigh ? "やや高め。保冷対策（保冷材1個追加等）を検討。" : "やや低め。保温対策を検討。"
+                };
+            } else if (diff <= 15) {
+                return {
+                    level: 2,
+                    label: "🟠 警戒",
+                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: isHigh ? "暑さ警戒！保冷材同梱・発泡箱を推奨。" : "寒さ警戒！カイロ同梱・保温材強化。"
+                };
+            } else if (diff <= 20) {
+                return {
+                    level: 3,
+                    label: "🔴 厳重警戒",
+                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: isHigh ? "猛暑リスク高！保冷強化・タイムサービス便検討。" : "極寒リスク高！カイロ複数＋保温箱必須。"
+                };
+            } else {
+                return {
+                    level: 4,
+                    label: "🟣 危険 (限界突破)",
+                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: "環境限界超過！発送日延期の検討を強く推奨します。"
+                };
+            }
+        }
+
+        // Open-Meteo APIから天気データ取得
+        async function fetchWeather(lat, lon) {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("天気データの取得に失敗しました");
+            return await response.json();
+        }
+
+        // 日付表示整形 (M/D)
+        function formatDate(dateObj) {
+            return `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+        }
+
+        // メイン処理
+        async function updateDashboard() {
+            const shipOffset = parseInt(document.getElementById("shipDateSelect").value);
+            const today = new Date();
+            
+            // 発送日
+            const shipDate = new Date();
+            shipDate.setDate(today.getDate() + shipOffset);
+
+            // 1. 埼玉の天気取得
+            try {
+                const saitamaData = await fetchWeather(SAITAMA.lat, SAITAMA.lon);
+                const sMax = saitamaData.daily.temperature_2m_max[shipOffset];
+                const sMin = saitamaData.daily.temperature_2m_min[shipOffset];
+                const sCode = saitamaData.daily.weathercode[shipOffset];
+
+                document.getElementById("originWeather").innerHTML = `
+                    <div>
+                        <span style="font-size:0.85rem; color:var(--text-muted);">発送日 (${formatDate(shipDate)}) の予想天気</span>
+                        <div class="temp-display" style="margin-top:4px;">
+                            <span class="temp-main">${Math.round(sMax)}℃</span>
+                            <span class="temp-range">/ 最低 ${Math.round(sMin)}℃</span>
+                        </div>
+                    </div>
+                    <div style="font-size:2.2rem;">${getWeatherIcon(sCode)}</div>
+                `;
+            } catch (err) {
+                document.getElementById("originWeather").innerHTML = `<span style="color:red;">埼玉の天気取得エラー</span>`;
+            }
+
+            // 2. 全国各都市の天気＆到着日気温取得
+            const destGrid = document.getElementById("destGrid");
+            destGrid.innerHTML = `<div class="loading"><div class="spinner"></div>到着日の予報を取得中...</div>`;
+
+            try {
+                const promises = DESTINATIONS.map(dest => fetchWeather(dest.lat, dest.lon));
+                const results = await Promise.all(promises);
+
+                let cardsHtml = "";
+
+                DESTINATIONS.forEach((dest, index) => {
+                    const data = results[index];
+                    const arrivalDayIndex = shipOffset + dest.leadDays;
+
+                    // 天気予報APIのデータ範囲内(通常7日分)かチェック
+                    if (arrivalDayIndex >= data.daily.time.length) {
+                        cardsHtml += `
+                            <div class="dest-card">
+                                <strong>${dest.city}</strong>: 予報期間外（日付が遠すぎます）
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const arrivalDateStr = data.daily.time[arrivalDayIndex];
+                    const arrivalDate = new Date(arrivalDateStr);
+                    const maxTemp = data.daily.temperature_2m_max[arrivalDayIndex];
+                    const minTemp = data.daily.temperature_2m_min[arrivalDayIndex];
+                    const weatherCode = data.daily.weathercode[arrivalDayIndex];
+
+                    const risk = getRiskInfo(maxTemp);
+
+                    cardsHtml += `
+                        <div class="dest-card">
+                            <div class="dest-card-header">
+                                <div class="dest-name-box">
+                                    <span class="dest-region">${dest.region}</span>
+                                    <span class="dest-city">${dest.city}</span>
+                                </div>
+                                <span class="lead-time-badge">${dest.leadDays}日後到着 (${formatDate(arrivalDate)})</span>
+                            </div>
+
+                            <div class="dest-card-body">
+                                <div class="dest-weather-icon">${getWeatherIcon(weatherCode)}</div>
+                                <div class="dest-temp-box">
+                                    <div class="dest-max-temp">${Math.round(maxTemp)}℃</div>
+                                    <div class="dest-min-temp">最低 ${Math.round(minTemp)}℃</div>
+                                </div>
+                            </div>
+
+                            <div class="risk-badge risk-level-${risk.level}">
+                                <div>
+                                    <div>${risk.label}</div>
+                                    <div class="risk-advice">${risk.advice}</div>
+                                </div>
+                                <div style="text-align:right; font-size:0.75rem; opacity:0.9;">
+                                    ${risk.diffText}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                destGrid.innerHTML = cardsHtml;
+
+            } catch (err) {
+                destGrid.innerHTML = `<div style="color:red; text-align:center; padding:20px;">データ取得中にエラーが発生しました。時間を置いて再度お試しください。</div>`;
+            }
+        }
+
+        // 初期実行
+        window.addEventListener("DOMContentLoaded", updateDashboard);
+    </script>
+</body>
+</html>

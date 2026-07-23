@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>埼玉発 配送天気＆危険度チェッカー</title>
+    <title>埼玉発 配送天気＆輸送リスクチェッカー</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -53,7 +53,6 @@
             margin-top: 4px;
         }
 
-        /* モニター全体を使えるように最大幅を拡張 (1200px) */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -142,11 +141,10 @@
             gap: 6px;
         }
 
-        /* 【重要】配送先カード一覧をグリッドレイアウトに変更 */
+        /* 配送先カード一覧（グリッド） */
         .cards-grid {
             display: grid;
-            /* 画面幅に合わせて最小300pxのカードを敷き詰める */
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 16px;
         }
 
@@ -205,7 +203,7 @@
             background: #fafafa;
             padding: 12px 14px;
             border-radius: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .dest-weather-icon {
@@ -226,6 +224,17 @@
             color: var(--text-muted);
         }
 
+        /* 輸送中の全行程スケジュール詳細 */
+        .transit-schedule {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            background: #f8fafc;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #edf2f7;
+        }
+
         /* 危険度判定バッジ */
         .risk-badge {
             display: flex;
@@ -238,11 +247,11 @@
             color: #ffffff;
         }
 
-        .risk-level-0 { background-color: #10b981; } /* 正常: エメラルド */
-        .risk-level-1 { background-color: #f59e0b; } /* 注意: アンバー */
-        .risk-level-2 { background-color: #f97316; } /* 警戒: オレンジ */
-        .risk-level-3 { background-color: #ef4444; } /* 厳重警戒: レッド */
-        .risk-level-4 { background-color: #8b5cf6; } /* 危険: パープル */
+        .risk-level-0 { background-color: #10b981; }
+        .risk-level-1 { background-color: #f59e0b; }
+        .risk-level-2 { background-color: #f97316; }
+        .risk-level-3 { background-color: #ef4444; }
+        .risk-level-4 { background-color: #8b5cf6; }
 
         .risk-advice {
             font-size: 0.75rem;
@@ -285,8 +294,8 @@
 <body>
 
     <header>
-        <h1>📦 埼玉発 配送天気＆危険度</h1>
-        <p>発送日と到着地の予想気温（基準25℃）をリスク判定</p>
+        <h1>📦 埼玉発 配送天気＆輸送リスク</h1>
+        <p>発送〜到着までの全行程の気温変化（基準25℃）をリスク判定</p>
     </header>
 
     <div class="container">
@@ -308,13 +317,13 @@
 
         <!-- 判定基準メッセージ -->
         <div class="baseline-info">
-            💡 <strong>判定基準（25℃目標）：</strong><br>
-            到着日の最高気温が25℃から±5℃乖離するごとに警戒レベルが上がります。保温・保冷資材の調整目安にご活用ください。
+            💡 <strong>輸送全行程チェック機能適用中（25℃目標）：</strong><br>
+            2日以上かかる地域は、**輸送中の全日程（発送日〜到着日）の中で最も25℃から離れた最高危険度**を検出して表示します。
         </div>
 
-        <div class="section-title">🚚 到着地の天気・気温と危険度</div>
+        <div class="section-title">🚚 到着地の天気・気温と全行程リスク</div>
 
-        <!-- 配送先一覧（3列・2列グリッド対応） -->
+        <!-- 配送先一覧 -->
         <div class="cards-grid" id="destGrid">
             <div class="loading"><div class="spinner"></div>全国の天気予報を取得中...</div>
         </div>
@@ -325,7 +334,6 @@
     </div>
 
     <script>
-        // 配送先データ定義（緯度・経度・リードタイム）
         const DESTINATIONS = [
             { id: "sapporo", region: "北海道", city: "札幌", lat: 43.0621, lon: 141.3544, leadDays: 2 },
             { id: "sendai", region: "東北", city: "仙台", lat: 38.2682, lon: 140.8694, leadDays: 1 },
@@ -352,45 +360,46 @@
             return "☁️";
         }
 
-        function getRiskInfo(temp) {
+        function getRiskInfo(temp, periodLabel) {
             const TARGET = 25;
             const diff = Math.abs(temp - TARGET);
             const isHigh = temp > TARGET;
+            const prefix = periodLabel ? `[${periodLabel}] ` : "";
 
             if (diff <= 5) {
                 return {
                     level: 0,
-                    label: "🟢 正常 (安全)",
-                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: "通常梱包で問題ありません。"
+                    label: "🟢 正常 (全期間安全)",
+                    diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: "全行程を通して通常梱包で問題ありません。"
                 };
             } else if (diff <= 10) {
                 return {
                     level: 1,
                     label: "🟡 注意",
-                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: isHigh ? "やや高め。保冷対策（保冷材1個追加等）を検討。" : "やや低め。保温対策を検討。"
+                    diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: `${prefix}${isHigh ? 'やや高め。保冷材追加を検討。' : 'やや低め。保温対策を検討。'}`
                 };
             } else if (diff <= 15) {
                 return {
                     level: 2,
                     label: "🟠 警戒",
-                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: isHigh ? "暑さ警戒！保冷材同梱・発泡箱を推奨。" : "寒さ警戒！カイロ同梱・保温材強化。"
+                    diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: `${prefix}${isHigh ? '暑さ警戒！保冷材同梱・発泡箱推奨。' : '寒さ警戒！カイロ同梱・保温材強化。'}`
                 };
             } else if (diff <= 20) {
                 return {
                     level: 3,
                     label: "🔴 厳重警戒",
-                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: isHigh ? "猛暑リスク高！保冷強化・タイムサービス便検討。" : "極寒リスク高！カイロ複数＋保温箱必須。"
+                    diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: `${prefix}${isHigh ? '猛暑リスク高！保冷強化・速達便検討。' : '極寒リスク高！カイロ複数＋保温箱必須。'}`
                 };
             } else {
                 return {
                     level: 4,
                     label: "🟣 危険 (限界突破)",
-                    diffText: `25℃との差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: "環境限界超過！発送日延期の検討を強く推奨します。"
+                    diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
+                    advice: `${prefix}環境限界超過！発送日延期を強く推奨。`
                 };
             }
         }
@@ -413,8 +422,10 @@
             const shipDate = new Date();
             shipDate.setDate(today.getDate() + shipOffset);
 
+            // 1. 埼玉の天気取得
+            let saitamaData = null;
             try {
-                const saitamaData = await fetchWeather(SAITAMA.lat, SAITAMA.lon);
+                saitamaData = await fetchWeather(SAITAMA.lat, SAITAMA.lon);
                 const sMax = saitamaData.daily.temperature_2m_max[shipOffset];
                 const sMin = saitamaData.daily.temperature_2m_min[shipOffset];
                 const sCode = saitamaData.daily.weathercode[shipOffset];
@@ -434,7 +445,7 @@
             }
 
             const destGrid = document.getElementById("destGrid");
-            destGrid.innerHTML = `<div class="loading"><div class="spinner"></div>到着日の予報を取得中...</div>`;
+            destGrid.innerHTML = `<div class="loading"><div class="spinner"></div>全日程の予報をリスク解析中...</div>`;
 
             try {
                 const promises = DESTINATIONS.map(dest => fetchWeather(dest.lat, dest.lon));
@@ -447,21 +458,46 @@
                     const arrivalDayIndex = shipOffset + dest.leadDays;
 
                     if (arrivalDayIndex >= data.daily.time.length) {
-                        cardsHtml += `
-                            <div class="dest-card">
-                                <strong>${dest.city}</strong>: 予報期間外
-                            </div>
-                        `;
+                        cardsHtml += `<div class="dest-card"><strong>${dest.city}</strong>: 予報期間外</div>`;
                         return;
                     }
 
+                    // 到着日の天気・気温
                     const arrivalDateStr = data.daily.time[arrivalDayIndex];
                     const arrivalDate = new Date(arrivalDateStr);
-                    const maxTemp = data.daily.temperature_2m_max[arrivalDayIndex];
-                    const minTemp = data.daily.temperature_2m_min[arrivalDayIndex];
+                    const arrivalMaxTemp = data.daily.temperature_2m_max[arrivalDayIndex];
+                    const arrivalMinTemp = data.daily.temperature_2m_min[arrivalDayIndex];
                     const weatherCode = data.daily.weathercode[arrivalDayIndex];
 
-                    const risk = getRiskInfo(maxTemp);
+                    // 【新規機能】全行程（発送日〜到着日）のリスク最大値を評価
+                    let maxRiskLevel = -1;
+                    let worstTemp = arrivalMaxTemp;
+                    let worstPeriodLabel = "";
+
+                    for (let day = 0; day <= dest.leadDays; day++) {
+                        const currentDayIdx = shipOffset + day;
+                        // 発送日は埼玉の気温、中日・到着日は目的地の予想気温（簡易近似）を使用
+                        const dayTemp = (day === 0 && saitamaData) 
+                            ? saitamaData.daily.temperature_2m_max[currentDayIdx]
+                            : data.daily.temperature_2m_max[currentDayIdx];
+
+                        const diff = Math.abs(dayTemp - 25);
+                        let level = 0;
+                        if (diff > 20) level = 4;
+                        else if (diff > 15) level = 3;
+                        else if (diff > 10) level = 2;
+                        else if (diff > 5) level = 1;
+
+                        if (level > maxRiskLevel) {
+                            maxRiskLevel = level;
+                            worstTemp = dayTemp;
+                            if (day === 0) worstPeriodLabel = "発送日(埼玉)";
+                            else if (day === dest.leadDays) worstPeriodLabel = "到着日";
+                            else worstPeriodLabel = `輸送中(Day${day})`;
+                        }
+                    }
+
+                    const risk = getRiskInfo(worstTemp, worstPeriodLabel);
 
                     cardsHtml += `
                         <div class="dest-card">
@@ -476,9 +512,13 @@
                             <div class="dest-card-body">
                                 <div class="dest-weather-icon">${getWeatherIcon(weatherCode)}</div>
                                 <div class="dest-temp-box">
-                                    <div class="dest-max-temp">${Math.round(maxTemp)}℃</div>
-                                    <div class="dest-min-temp">最低 ${Math.round(minTemp)}℃</div>
+                                    <div class="dest-max-temp">${Math.round(arrivalMaxTemp)}℃</div>
+                                    <div class="dest-min-temp">到着日 最低 ${Math.round(arrivalMinTemp)}℃</div>
                                 </div>
+                            </div>
+
+                            <div class="transit-schedule">
+                                🗓️ 輸送期間: ${formatDate(shipDate)} 〜 ${formatDate(arrivalDate)} (${dest.leadDays + 1}日間)
                             </div>
 
                             <div class="risk-badge risk-level-${risk.level}">

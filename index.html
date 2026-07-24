@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- STREAMING_CHUNK:Configuring meta and styling... -->
+    <!-- STREAMING_CHUNK:Configuring mobile and desktop responsive viewport layout... -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>埼玉発 配送天気＆お届け推奨日チェッカー</title>
@@ -10,7 +10,7 @@
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
             --primary-light: #eff6ff;
-            --bg-color: #f8fafc;
+            --bg-color: #f1f5f9;
             --card-bg: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
@@ -31,207 +31,242 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding-bottom: 50px;
+            padding-bottom: 20px;
         }
 
+        /* 画面上部：コンパクト・ヘッダー */
         header {
             background: linear-gradient(135deg, #1e3a8a, #2563eb);
             color: #ffffff;
-            padding: 20px 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            padding: 10px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         header h1 {
-            font-size: 1.35rem;
+            font-size: 1.1rem;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         header p {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             opacity: 0.9;
-            margin-top: 4px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px 16px;
+            padding: 12px 16px;
         }
 
-        /* タブ切替ナビゲーション */
-        .nav-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            background: #e2e8f0;
-            padding: 4px;
+        /* アクションバー：タブ＆設定コントロールを横一列に統合 */
+        .top-action-bar {
+            background: var(--card-bg);
             border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .nav-tabs {
+            display: inline-flex;
+            gap: 4px;
+            background: #e2e8f0;
+            padding: 3px;
+            border-radius: 8px;
         }
 
         .tab-btn {
-            flex: 1;
-            padding: 10px 16px;
+            padding: 6px 14px;
             border: none;
             background: transparent;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             font-weight: 700;
             color: var(--text-muted);
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s ease;
-            text-align: center;
+            white-space: nowrap;
         }
 
         .tab-btn.active {
             background: var(--card-bg);
             color: var(--primary);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
 
-        /* フィルター & 選択エリア */
-        .controls-card {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
+        .controls-inline {
             display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
             align-items: center;
-            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .select-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .select-label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--text-muted);
             white-space: nowrap;
         }
 
         .custom-select {
-            padding: 8px 14px;
-            border-radius: 8px;
+            padding: 5px 10px;
+            border-radius: 6px;
             border: 1px solid #cbd5e1;
-            background: #f1f5f9;
+            background: #f8fafc;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             color: var(--text-main);
             outline: none;
             cursor: pointer;
         }
 
-        /* 説明インフォバナー */
-        .info-banner {
+        /* 1行コンパクト説明バナー */
+        .info-banner-compact {
             background: #eff6ff;
-            border-left: 4px solid var(--primary);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            border-left: 3px solid var(--primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
             color: #1e40af;
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-
-        /* 10日間カレンダーテーブル/リスト */
-        .forecast-list {
+            margin-bottom: 12px;
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .day-row-card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-            display: grid;
-            grid-template-columns: 140px 1.2fr 1fr auto;
-            gap: 16px;
             align-items: center;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            justify-content: space-between;
         }
 
-        @media (max-width: 768px) {
-            .day-row-card {
-                grid-template-columns: 1fr;
-                gap: 10px;
+        /* 10日間カレンダー：PCでは 5列×2行 でスクロールなし表示 */
+        .forecast-grid-10days {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 1100px) {
+            .forecast-grid-10days {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
-        .day-row-card.recommended {
+        @media (max-width: 700px) {
+            .forecast-grid-10days {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .day-card-compact {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 145px;
+            position: relative;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .day-card-compact:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .day-card-compact.recommended {
             border: 2px solid var(--success);
             background: #f0fdf4;
         }
 
-        .date-box {
+        .card-top {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
         }
 
-        .ship-date-text {
-            font-size: 1.05rem;
+        .arrival-date-main {
+            font-size: 0.95rem;
             font-weight: 800;
             color: var(--text-main);
+            line-height: 1.2;
         }
 
-        .arrival-date-text {
-            font-size: 0.78rem;
+        .ship-date-sub {
+            font-size: 0.72rem;
             color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .temp-summary-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.85rem;
-        }
-
-        .temp-pill {
-            background: #f1f5f9;
-            padding: 4px 10px;
-            border-radius: 6px;
             font-weight: 600;
-            white-space: nowrap;
         }
 
         .best-badge {
             background: var(--success);
             color: #ffffff;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .card-weather-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.7);
             padding: 4px 8px;
             border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-bottom: 4px;
+            margin: 4px 0;
+        }
+
+        .card-weather-icon {
+            font-size: 1.4rem;
+        }
+
+        .card-temp-text {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .card-temp-sub {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: normal;
         }
 
         /* 危険度バッジ */
-        .risk-badge {
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+        .risk-badge-compact {
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 0.72rem;
             font-weight: 700;
             color: #ffffff;
             text-align: center;
-            min-width: 130px;
+            line-height: 1.2;
         }
 
         .risk-level-0 { background-color: #10b981; }
@@ -240,48 +275,52 @@
         .risk-level-3 { background-color: #ef4444; }
         .risk-level-4 { background-color: #8b5cf6; }
 
-        .risk-advice-text {
-            font-size: 0.75rem;
+        .risk-advice-compact {
+            font-size: 0.65rem;
             font-weight: normal;
             opacity: 0.95;
-            margin-top: 2px;
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* 併示ダッシュボード（複数都市グリッド） */
-        .cards-grid {
+        /* 全国ダッシュボード（5列×2行） */
+        .cards-grid-5col {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
         }
 
-        .dest-card {
+        @media (max-width: 1100px) {
+            .cards-grid-5col {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .cards-grid-5col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dest-card-compact {
             background: var(--card-bg);
-            border-radius: 14px;
-            padding: 16px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border-radius: 10px;
+            padding: 10px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-        }
-
-        .dest-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .dest-city {
-            font-size: 1.2rem;
-            font-weight: 700;
+            min-height: 145px;
         }
 
         .loading {
             text-align: center;
-            padding: 40px 0;
+            padding: 30px 0;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             grid-column: 1 / -1;
         }
 
@@ -289,10 +328,10 @@
             border: 3px solid #f3f3f3;
             border-top: 3px solid var(--primary);
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px auto;
+            margin: 0 auto 8px auto;
         }
 
         @keyframes spin {
@@ -306,103 +345,103 @@
 
         footer {
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            margin-top: 40px;
+            margin-top: 12px;
         }
     </style>
 </head>
 <body>
 
-    <!-- STREAMING_CHUNK:Rendering header and navigation tabs... -->
+    <!-- STREAMING_CHUNK:Rendering header and compact control action bar... -->
     <header>
-        <h1>📦 埼玉発 配送リスク＆お届け推奨日チェッカー</h1>
-        <p>購入者様・発送者様向け：向こう10日間の輸送全行程気温リスクシミュレーター</p>
+        <div class="header-inner">
+            <h1>📦 埼玉発 配送天気＆お届け推奨日チェッカー</h1>
+            <p>輸送全行程の気温リスク（目標25℃）から最適な配送日程を一目で診断</p>
+        </div>
     </header>
 
     <div class="container">
         
-        <!-- タブ切替 -->
-        <div class="nav-tabs">
-            <button id="tabCalendarBtn" class="tab-btn active" onclick="switchTab('calendar')">📅 10日間の発送推奨日（購入者向け）</button>
-            <button id="tabDashboardBtn" class="tab-btn" onclick="switchTab('dashboard')">🗺️ 全国エリア一覧（発送者向け）</button>
+        <!-- 操作アクションバー -->
+        <div class="top-action-bar">
+            <div class="nav-tabs">
+                <button id="tabCalendarBtn" class="tab-btn active" onclick="switchTab('calendar')">📅 お届け推奨日（購入者様）</button>
+                <button id="tabDashboardBtn" class="tab-btn" onclick="switchTab('dashboard')">🗺️ 全国エリア一覧（発送者様）</button>
+            </div>
+
+            <!-- お届け日カレンダー用コントロール -->
+            <div id="calendarControls" class="controls-inline">
+                <div class="select-group">
+                    <span class="select-label">📍 お届け先：</span>
+                    <select id="destSelect" class="custom-select" onchange="renderCalendarView()"></select>
+                </div>
+                <div class="select-group">
+                    <span class="select-label">🚚 最速お届け：</span>
+                    <span id="earliestArrivalDateLabel" style="font-weight:800; color:var(--primary); font-size:0.85rem;">計算中...</span>
+                </div>
+            </div>
+
+            <!-- 全国ダッシュボード用コントロール -->
+            <div id="dashboardControls" class="controls-inline hidden">
+                <div class="select-group">
+                    <span class="select-label">📍 発送元：埼玉県さいたま市</span>
+                </div>
+                <div class="select-group">
+                    <span class="select-label">📅 埼玉発送日：</span>
+                    <select id="shipDateSelect" class="custom-select" onchange="renderDashboardView()">
+                        <option value="1">明日発送（最短）</option>
+                        <option value="2">2日後発送</option>
+                        <option value="3">3日後発送</option>
+                        <option value="4">4日後発送</option>
+                        <option value="5">5日後発送</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <!-- 10日間カレンダーモード時のコントローラー -->
-        <div id="calendarControls" class="controls-card">
-            <div class="select-group">
-                <span class="select-label">📍 お届け先（配送地域）：</span>
-                <select id="destSelect" class="custom-select" onchange="renderCalendarView()">
-                    <!-- JSで動的挿入 -->
-                </select>
-            </div>
-            <div class="select-group">
-                <span class="select-label">🚚 最短発送日：</span>
-                <span id="earliestShipDateLabel" style="font-weight:700; color:var(--primary);">明日発送</span>
-            </div>
+        <!-- コンパクト説明バナー -->
+        <div class="info-banner-compact" id="infoBanner">
+            <span>💡 購入日翌日（明日）に埼玉を出荷した場合を最速とし、10日間の受け取り日リスクを診断しています。</span>
+            <span style="font-weight:700; color:var(--success); white-space:nowrap;">⭐ おすすめお届け日＝安全帯</span>
         </div>
 
-        <!-- 全国ダッシュボードモード時のコントローラー -->
-        <div id="dashboardControls" class="controls-card hidden">
-            <div class="select-group">
-                <span class="select-label">📍 発送元：埼玉県（さいたま市）</span>
-            </div>
-            <div class="select-group">
-                <span class="select-label">📅 発送予定日：</span>
-                <select id="shipDateSelect" class="custom-select" onchange="renderDashboardView()">
-                    <option value="1">明日発送（最短）</option>
-                    <option value="2">2日後発送</option>
-                    <option value="3">3日後発送</option>
-                    <option value="4">4日後発送</option>
-                    <option value="5">5日後発送</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- 説明バナー -->
-        <div class="info-banner" id="infoBanner">
-            💡 <strong>向こう10日間の発送日リスク診断：</strong><br>
-            購入日翌日（明日）を最短発送日として、お届けまでの全行程（発送日〜到着日）で最も25℃から離れる最高リスクを算出しています。
-            <strong style="color:var(--success);">「⭐ 推奨日」</strong>を選択いただくと、輸送中のダメージリスクを最小限に抑えられます。
-        </div>
-
-        <!-- コンテンツエリア：10日間カレンダー -->
+        <!-- 10日間カレンダー（5列×2行） -->
         <div id="calendarView">
-            <div class="forecast-list" id="calendarList">
+            <div class="forecast-grid-10days" id="calendarList">
                 <div class="loading"><div class="spinner"></div>10日間の輸送リスクを計算中...</div>
             </div>
         </div>
 
-        <!-- コンテンツエリア：全国ダッシュボード -->
+        <!-- 全国ダッシュボード（5列×2行） -->
         <div id="dashboardView" class="hidden">
-            <div class="cards-grid" id="destGrid">
+            <div class="cards-grid-5col" id="destGrid">
                 <div class="loading"><div class="spinner"></div>全エリアの予報を取得中...</div>
             </div>
         </div>
 
         <footer>
-            Data provided by Open-Meteo Weather API (Free & Commercial Use)
+            Data provided by Open-Meteo Weather API
         </footer>
     </div>
 
-    <!-- STREAMING_CHUNK:Implementing weather logic and view rendering... -->
+    <!-- STREAMING_CHUNK:Implementing compact rendering functions... -->
     <script>
         const DESTINATIONS = [
-            { id: "sapporo", region: "北海道", city: "札幌", lat: 43.0621, lon: 141.3544, leadDays: 2 },
+            { id: "osaka", region: "関西", city: "大阪", lat: 34.6937, lon: 135.5023, leadDays: 1 },
             { id: "sendai", region: "東北", city: "仙台", lat: 38.2682, lon: 140.8694, leadDays: 1 },
             { id: "tokyo", region: "関東", city: "東京", lat: 35.6895, lon: 139.6917, leadDays: 1 },
             { id: "nagoya", region: "東海", city: "名古屋", lat: 35.1815, lon: 136.9064, leadDays: 1 },
-            { id: "osaka", region: "関西", city: "大阪", lat: 34.6937, lon: 135.5023, leadDays: 1 },
+            { id: "fukuoka", region: "九州", city: "福岡", lat: 33.5904, lon: 130.4017, leadDays: 2 },
             { id: "hiroshima", region: "中国", city: "広島", lat: 34.3853, lon: 132.4553, leadDays: 2 },
             { id: "kochi", region: "四国", city: "高知", lat: 33.5597, lon: 133.5311, leadDays: 2 },
-            { id: "fukuoka", region: "九州", city: "福岡", lat: 33.5904, lon: 130.4017, leadDays: 2 },
+            { id: "sapporo", region: "北海道", city: "札幌", lat: 43.0621, lon: 141.3544, leadDays: 2 },
             { id: "kagoshima", region: "九州", city: "鹿児島", lat: 31.5966, lon: 130.5571, leadDays: 2 },
             { id: "naha", region: "沖縄", city: "那覇", lat: 26.2124, lon: 127.6809, leadDays: 3 }
         ];
 
         const SAITAMA = { lat: 35.8617, lon: 139.6455 };
 
-        // キャッシュデータ
         let weatherCache = {};
         let currentTab = "calendar";
 
@@ -417,7 +456,6 @@
             return "☁️";
         }
 
-        // 25℃基準の危険度判定
         function getRiskInfo(temp, periodLabel) {
             const TARGET = 25;
             const diff = Math.abs(temp - TARGET);
@@ -427,42 +465,41 @@
             if (diff <= 5) {
                 return {
                     level: 0,
-                    label: "🟢 正常 (全期間安全)",
+                    label: "🟢 正常 (安全帯)",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: "全行程を通して通常梱包で問題ありません。"
+                    advice: "全行程を通して理想的です。"
                 };
             } else if (diff <= 10) {
                 return {
                     level: 1,
                     label: "🟡 注意",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: `${prefix}${isHigh ? 'やや高め。保冷材追加を推奨。' : 'やや低め。保温対策を推奨。'}`
+                    advice: `${prefix}${isHigh ? '保冷材同梱。' : '保温対策。'}`
                 };
             } else if (diff <= 15) {
                 return {
                     level: 2,
                     label: "🟠 警戒",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: `${prefix}${isHigh ? '暑さ警戒！保冷材同梱・発泡箱必須。' : '寒さ警戒！カイロ同梱・保温強化。'}`
+                    advice: `${prefix}${isHigh ? '保冷＋発泡箱。' : 'カイロ同梱。'}`
                 };
             } else if (diff <= 20) {
                 return {
                     level: 3,
                     label: "🔴 厳重警戒",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: `${prefix}${isHigh ? '猛暑リスク高！速達・クール便検討。' : '極寒リスク高！保温材重装が必須。'}`
+                    advice: `${prefix}${isHigh ? 'クール便検討。' : '重装保温対応。'}`
                 };
             } else {
                 return {
                     level: 4,
-                    label: "🟣 危険 (限界超え)",
+                    label: "🟣 危険 (限界超)",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: `${prefix}環境限界超。この日の発送は回避を推奨。`
+                    advice: `${prefix}受け取り回避を推奨。`
                 };
             }
         }
 
-        // Open-Meteo API (16日間予報)
         async function fetchWeather(lat, lon) {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&forecast_days=16&timezone=Asia%2FTokyo`;
             const response = await fetch(url);
@@ -475,23 +512,15 @@
             return `${dateObj.getMonth() + 1}/${dateObj.getDate()}(${dayNames[dateObj.getDay()]})`;
         }
 
-        // 初期化＆全都市データ読み込み
         async function initApp() {
-            // お届け先セレクト作成
             const destSelect = document.getElementById("destSelect");
             DESTINATIONS.forEach(dest => {
                 const opt = document.createElement("option");
                 opt.value = dest.id;
-                opt.textContent = `【${dest.region}】${dest.city} (輸送${dest.leadDays}日間)`;
+                opt.textContent = `【${dest.region}】${dest.city} (埼玉から${dest.leadDays}日目届)`;
                 destSelect.appendChild(opt);
             });
 
-            // 最短発送日（明日）のラベルセット
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById("earliestShipDateLabel").textContent = `明日 (${formatDate(tomorrow)})`;
-
-            // データ一括取得
             try {
                 const saitamaPromise = fetchWeather(SAITAMA.lat, SAITAMA.lon);
                 const destPromises = DESTINATIONS.map(d => fetchWeather(d.lat, d.lon));
@@ -503,15 +532,13 @@
                     weatherCache[d.id] = destResults[i];
                 });
 
-                // 初期ビュー描写
                 renderCalendarView();
 
             } catch (err) {
-                document.getElementById("calendarList").innerHTML = `<div style="color:red; text-align:center; padding:20px;">データ取得エラーが発生しました。リロードしてお試しください。</div>`;
+                document.getElementById("calendarList").innerHTML = `<div style="color:red; text-align:center; padding:20px;">データ取得エラーが発生しました。</div>`;
             }
         }
 
-        // 10日間カレンダー描画
         function renderCalendarView() {
             const destId = document.getElementById("destSelect").value || "osaka";
             const dest = DESTINATIONS.find(d => d.id === destId);
@@ -520,13 +547,18 @@
 
             if (!destData || !saitamaData) return;
 
+            const today = new Date();
+            const earliestShipDate = new Date(today);
+            earliestShipDate.setDate(today.getDate() + 1);
+
+            const earliestArrivalDate = new Date(earliestShipDate);
+            earliestArrivalDate.setDate(earliestShipDate.getDate() + dest.leadDays);
+
+            document.getElementById("earliestArrivalDateLabel").textContent = `${formatDate(earliestArrivalDate)}`;
+
             const calendarList = document.getElementById("calendarList");
             let html = "";
 
-            const today = new Date();
-            const minRiskDays = [];
-
-            // 向こう10日間の発送日（Day+1 〜 Day+10）を分析
             for (let shipOffset = 1; shipOffset <= 10; shipOffset++) {
                 const shipDate = new Date(today);
                 shipDate.setDate(today.getDate() + shipOffset);
@@ -534,7 +566,6 @@
                 const arrivalDate = new Date(shipDate);
                 arrivalDate.setDate(shipDate.getDate() + dest.leadDays);
 
-                // 全行程（発送日〜到着日）での最大リスク計算
                 let maxRiskLevel = -1;
                 let worstTemp = 25;
                 let worstPeriodLabel = "";
@@ -557,8 +588,8 @@
                     if (level > maxRiskLevel) {
                         maxRiskLevel = level;
                         worstTemp = dayTemp;
-                        if (day === 0) worstPeriodLabel = "発送日(埼玉)";
-                        else if (day === dest.leadDays) worstPeriodLabel = "到着日";
+                        if (day === 0) worstPeriodLabel = "埼玉発送時";
+                        else if (day === dest.leadDays) worstPeriodLabel = "お届け当日";
                         else worstPeriodLabel = `輸送中(Day${day})`;
                     }
                 }
@@ -572,25 +603,26 @@
                 const isRecommended = risk.level <= 1;
 
                 html += `
-                    <div class="day-row-card ${isRecommended ? 'recommended' : ''}">
-                        <div class="date-box">
-                            ${isRecommended ? '<div class="best-badge">⭐ おすすめ発送日</div>' : ''}
-                            <span class="ship-date-text">発送: ${formatDate(shipDate)}</span>
-                            <span class="arrival-date-text">🚚 お届け: ${formatDate(arrivalDate)} (${dest.city})</span>
+                    <div class="day-card-compact ${isRecommended ? 'recommended' : ''}">
+                        <div class="card-top">
+                            <div>
+                                <div class="arrival-date-main">🚚 ${formatDate(arrivalDate)}</div>
+                                <div class="ship-date-sub">📦 発送: ${formatDate(shipDate)}</div>
+                            </div>
+                            ${isRecommended ? '<span class="best-badge">⭐ 推奨</span>' : ''}
                         </div>
 
-                        <div class="temp-summary-box">
-                            <span>${getWeatherIcon(weatherCode)} 到着地予想:</span>
-                            <span class="temp-pill">${Math.round(arrivalMaxTemp)}℃ / 最低${Math.round(arrivalMinTemp)}℃</span>
+                        <div class="card-weather-row">
+                            <span class="card-weather-icon">${getWeatherIcon(weatherCode)}</span>
+                            <div class="card-temp-text">
+                                ${Math.round(arrivalMaxTemp)}℃
+                                <div class="card-temp-sub">最低 ${Math.round(arrivalMinTemp)}℃</div>
+                            </div>
                         </div>
 
-                        <div style="font-size:0.8rem; color:var(--text-muted);">
-                            行程内最高影響: <strong>${Math.round(worstTemp)}℃</strong>
-                        </div>
-
-                        <div class="risk-badge risk-level-${risk.level}">
+                        <div class="risk-badge-compact risk-level-${risk.level}">
                             <div>${risk.label}</div>
-                            <div class="risk-advice-text">${risk.advice}</div>
+                            <div class="risk-advice-compact">${risk.advice}</div>
                         </div>
                     </div>
                 `;
@@ -599,7 +631,6 @@
             calendarList.innerHTML = html;
         }
 
-        // 全国ダッシュボード描画
         function renderDashboardView() {
             const shipOffset = parseInt(document.getElementById("shipDateSelect").value);
             const saitamaData = weatherCache["saitama"];
@@ -616,7 +647,7 @@
                 const arrivalDayIndex = shipOffset + dest.leadDays;
 
                 if (!destData || arrivalDayIndex >= destData.daily.time.length) {
-                    cardsHtml += `<div class="dest-card"><strong>${dest.city}</strong>: データなし</div>`;
+                    cardsHtml += `<div class="dest-card-compact"><strong>${dest.city}</strong>: データなし</div>`;
                     return;
                 }
 
@@ -646,8 +677,8 @@
                     if (level > maxRiskLevel) {
                         maxRiskLevel = level;
                         worstTemp = dayTemp;
-                        if (day === 0) worstPeriodLabel = "発送日(埼玉)";
-                        else if (day === dest.leadDays) worstPeriodLabel = "到着日";
+                        if (day === 0) worstPeriodLabel = "埼玉発送時";
+                        else if (day === dest.leadDays) worstPeriodLabel = "お届け当日";
                         else worstPeriodLabel = `輸送中(Day${day})`;
                     }
                 }
@@ -655,30 +686,28 @@
                 const risk = getRiskInfo(worstTemp, worstPeriodLabel);
 
                 cardsHtml += `
-                    <div class="dest-card">
-                        <div class="dest-card-header">
+                    <div class="dest-card-compact">
+                        <div class="card-top">
                             <div>
-                                <span style="font-size:0.75rem; color:var(--text-muted);">${dest.region}</span>
-                                <div class="dest-city">${dest.city}</div>
+                                <span style="font-size:0.7rem; color:var(--text-muted);">${dest.region}</span>
+                                <div style="font-size:1.1rem; font-weight:800;">${dest.city}</div>
                             </div>
-                            <span style="font-size:0.75rem; background:#f1f5f9; padding:4px 8px; border-radius:6px; font-weight:600;">
-                                ${dest.leadDays}日後到着 (${formatDate(arrivalDate)})
+                            <span style="font-size:0.7rem; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:600;">
+                                お届け: ${formatDate(arrivalDate)}
                             </span>
                         </div>
 
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa; padding:10px 12px; border-radius:10px; margin-bottom:10px;">
-                            <span style="font-size:2rem;">${getWeatherIcon(weatherCode)}</span>
-                            <div style="text-align:right;">
-                                <div style="font-size:1.3rem; font-weight:700;">${Math.round(arrivalMaxTemp)}℃</div>
-                                <div style="font-size:0.8rem; color:var(--text-muted);">最低 ${Math.round(arrivalMinTemp)}℃</div>
+                        <div class="card-weather-row">
+                            <span class="card-weather-icon">${getWeatherIcon(weatherCode)}</span>
+                            <div class="card-temp-text">
+                                ${Math.round(arrivalMaxTemp)}℃
+                                <div class="card-temp-sub">最低 ${Math.round(arrivalMinTemp)}℃</div>
                             </div>
                         </div>
 
-                        <div class="risk-badge risk-level-${risk.level}">
-                            <div>
-                                <div>${risk.label}</div>
-                                <div class="risk-advice-text">${risk.advice}</div>
-                            </div>
+                        <div class="risk-badge-compact risk-level-${risk.level}">
+                            <div>${risk.label}</div>
+                            <div class="risk-advice-compact">${risk.advice}</div>
                         </div>
                     </div>
                 `;
@@ -687,7 +716,6 @@
             destGrid.innerHTML = cardsHtml;
         }
 
-        // タブ切り替え
         function switchTab(tab) {
             currentTab = tab;
             const calendarBtn = document.getElementById("tabCalendarBtn");

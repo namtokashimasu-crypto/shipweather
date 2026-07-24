@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <!-- STREAMING_CHUNK:Configuring meta and styling... -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>埼玉発 配送天気＆輸送リスクチェッカー</title>
+    <title>埼玉発 配送天気＆お届け推奨日チェッカー</title>
     <style>
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         * {
@@ -26,7 +31,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding-bottom: 40px;
+            padding-bottom: 50px;
         }
 
         header {
@@ -59,32 +64,65 @@
             padding: 20px 16px;
         }
 
-        /* 発送元カード */
-        .origin-card {
+        /* タブ切替ナビゲーション */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        /* フィルター & 選択エリア */
+        .controls-card {
             background: #ffffff;
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
-        }
-
-        .origin-header {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
             align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed var(--border-color);
+            justify-content: space-between;
         }
 
-        .origin-title {
-            font-size: 0.95rem;
+        .select-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .select-label {
+            font-size: 0.85rem;
+            font-weight: 700;
             color: var(--text-muted);
-            font-weight: 600;
+            white-space: nowrap;
         }
 
-        .ship-date-select {
+        .custom-select {
             padding: 8px 14px;
             border-radius: 8px;
             border: 1px solid #cbd5e1;
@@ -96,31 +134,8 @@
             cursor: pointer;
         }
 
-        .origin-weather-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .temp-display {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-        }
-
-        .temp-main {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: var(--text-main);
-        }
-
-        .temp-range {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        /* 基準注記 */
-        .baseline-info {
+        /* 説明インフォバナー */
+        .info-banner {
             background: #eff6ff;
             border-left: 4px solid var(--primary);
             padding: 12px 16px;
@@ -131,17 +146,108 @@
             line-height: 1.5;
         }
 
-        /* セクションヘッダー */
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 16px;
+        /* 10日間カレンダーテーブル/リスト */
+        .forecast-list {
             display: flex;
-            align-items: center;
-            gap: 6px;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        /* 配送先カード一覧（グリッド） */
+        .day-row-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            display: grid;
+            grid-template-columns: 140px 1.2fr 1fr auto;
+            gap: 16px;
+            align-items: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        @media (max-width: 768px) {
+            .day-row-card {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+
+        .day-row-card.recommended {
+            border: 2px solid var(--success);
+            background: #f0fdf4;
+        }
+
+        .date-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ship-date-text {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .arrival-date-text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .temp-summary-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+        }
+
+        .temp-pill {
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .best-badge {
+            background: var(--success);
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        /* 危険度バッジ */
+        .risk-badge {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-align: center;
+            min-width: 130px;
+        }
+
+        .risk-level-0 { background-color: #10b981; }
+        .risk-level-1 { background-color: #f59e0b; }
+        .risk-level-2 { background-color: #f97316; }
+        .risk-level-3 { background-color: #ef4444; }
+        .risk-level-4 { background-color: #8b5cf6; }
+
+        .risk-advice-text {
+            font-size: 0.75rem;
+            font-weight: normal;
+            opacity: 0.95;
+            margin-top: 2px;
+        }
+
+        /* 併示ダッシュボード（複数都市グリッド） */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -154,15 +260,9 @@
             padding: 16px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.04);
             border: 1px solid var(--border-color);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-        }
-
-        .dest-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         .dest-card-header {
@@ -172,100 +272,17 @@
             margin-bottom: 12px;
         }
 
-        .dest-name-box {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .dest-region {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
         .dest-city {
             font-size: 1.2rem;
             font-weight: 700;
         }
 
-        .lead-time-badge {
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            background: #f1f5f9;
-            color: #475569;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        .dest-card-body {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fafafa;
-            padding: 12px 14px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-        }
-
-        .dest-weather-icon {
-            font-size: 2rem;
-        }
-
-        .dest-temp-box {
-            text-align: right;
-        }
-
-        .dest-max-temp {
-            font-size: 1.35rem;
-            font-weight: 700;
-        }
-
-        .dest-min-temp {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        /* 輸送中の全行程スケジュール詳細 */
-        .transit-schedule {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            background: #f8fafc;
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid #edf2f7;
-        }
-
-        /* 危険度判定バッジ */
-        .risk-badge {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .risk-level-0 { background-color: #10b981; }
-        .risk-level-1 { background-color: #f59e0b; }
-        .risk-level-2 { background-color: #f97316; }
-        .risk-level-3 { background-color: #ef4444; }
-        .risk-level-4 { background-color: #8b5cf6; }
-
-        .risk-advice {
-            font-size: 0.75rem;
-            font-weight: normal;
-            opacity: 0.95;
-            margin-top: 2px;
-        }
-
         .loading {
-            grid-column: 1 / -1;
             text-align: center;
             padding: 40px 0;
             color: var(--text-muted);
             font-size: 0.9rem;
+            grid-column: 1 / -1;
         }
 
         .spinner {
@@ -283,6 +300,10 @@
             100% { transform: rotate(360deg); }
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         footer {
             text-align: center;
             font-size: 0.75rem;
@@ -293,46 +314,78 @@
 </head>
 <body>
 
+    <!-- STREAMING_CHUNK:Rendering header and navigation tabs... -->
     <header>
-        <h1>📦 埼玉発 配送天気＆輸送リスク</h1>
-        <p>発送〜到着までの全行程の気温変化（基準25℃）をリスク判定</p>
+        <h1>📦 埼玉発 配送リスク＆お届け推奨日チェッカー</h1>
+        <p>購入者様・発送者様向け：向こう10日間の輸送全行程気温リスクシミュレーター</p>
     </header>
 
     <div class="container">
         
-        <!-- 発送元情報 -->
-        <div class="origin-card">
-            <div class="origin-header">
-                <span class="origin-title">📍 発送元：埼玉県（さいたま市）</span>
-                <select id="shipDateSelect" class="ship-date-select" onchange="updateDashboard()">
-                    <option value="0">本日発送</option>
-                    <option value="1">明日発送</option>
-                    <option value="2">明々後日発送</option>
+        <!-- タブ切替 -->
+        <div class="nav-tabs">
+            <button id="tabCalendarBtn" class="tab-btn active" onclick="switchTab('calendar')">📅 10日間の発送推奨日（購入者向け）</button>
+            <button id="tabDashboardBtn" class="tab-btn" onclick="switchTab('dashboard')">🗺️ 全国エリア一覧（発送者向け）</button>
+        </div>
+
+        <!-- 10日間カレンダーモード時のコントローラー -->
+        <div id="calendarControls" class="controls-card">
+            <div class="select-group">
+                <span class="select-label">📍 お届け先（配送地域）：</span>
+                <select id="destSelect" class="custom-select" onchange="renderCalendarView()">
+                    <!-- JSで動的挿入 -->
                 </select>
             </div>
-            <div class="origin-weather-info" id="originWeather">
-                <div class="loading"><div class="spinner"></div>天気データ取得中...</div>
+            <div class="select-group">
+                <span class="select-label">🚚 最短発送日：</span>
+                <span id="earliestShipDateLabel" style="font-weight:700; color:var(--primary);">明日発送</span>
             </div>
         </div>
 
-        <!-- 判定基準メッセージ -->
-        <div class="baseline-info">
-            💡 <strong>輸送全行程チェック機能適用中（25℃目標）：</strong><br>
-            2日以上かかる地域は、**輸送中の全日程（発送日〜到着日）の中で最も25℃から離れた最高危険度**を検出して表示します。
+        <!-- 全国ダッシュボードモード時のコントローラー -->
+        <div id="dashboardControls" class="controls-card hidden">
+            <div class="select-group">
+                <span class="select-label">📍 発送元：埼玉県（さいたま市）</span>
+            </div>
+            <div class="select-group">
+                <span class="select-label">📅 発送予定日：</span>
+                <select id="shipDateSelect" class="custom-select" onchange="renderDashboardView()">
+                    <option value="1">明日発送（最短）</option>
+                    <option value="2">2日後発送</option>
+                    <option value="3">3日後発送</option>
+                    <option value="4">4日後発送</option>
+                    <option value="5">5日後発送</option>
+                </select>
+            </div>
         </div>
 
-        <div class="section-title">🚚 到着地の天気・気温と全行程リスク</div>
+        <!-- 説明バナー -->
+        <div class="info-banner" id="infoBanner">
+            💡 <strong>向こう10日間の発送日リスク診断：</strong><br>
+            購入日翌日（明日）を最短発送日として、お届けまでの全行程（発送日〜到着日）で最も25℃から離れる最高リスクを算出しています。
+            <strong style="color:var(--success);">「⭐ 推奨日」</strong>を選択いただくと、輸送中のダメージリスクを最小限に抑えられます。
+        </div>
 
-        <!-- 配送先一覧 -->
-        <div class="cards-grid" id="destGrid">
-            <div class="loading"><div class="spinner"></div>全国の天気予報を取得中...</div>
+        <!-- コンテンツエリア：10日間カレンダー -->
+        <div id="calendarView">
+            <div class="forecast-list" id="calendarList">
+                <div class="loading"><div class="spinner"></div>10日間の輸送リスクを計算中...</div>
+            </div>
+        </div>
+
+        <!-- コンテンツエリア：全国ダッシュボード -->
+        <div id="dashboardView" class="hidden">
+            <div class="cards-grid" id="destGrid">
+                <div class="loading"><div class="spinner"></div>全エリアの予報を取得中...</div>
+            </div>
         </div>
 
         <footer>
-            Data provided by Open-Meteo API (Free & Commercial Use)
+            Data provided by Open-Meteo Weather API (Free & Commercial Use)
         </footer>
     </div>
 
+    <!-- STREAMING_CHUNK:Implementing weather logic and view rendering... -->
     <script>
         const DESTINATIONS = [
             { id: "sapporo", region: "北海道", city: "札幌", lat: 43.0621, lon: 141.3544, leadDays: 2 },
@@ -349,6 +402,10 @@
 
         const SAITAMA = { lat: 35.8617, lon: 139.6455 };
 
+        // キャッシュデータ
+        let weatherCache = {};
+        let currentTab = "calendar";
+
         function getWeatherIcon(code) {
             if (code === 0) return "☀️";
             if (code >= 1 && code <= 3) return "⛅";
@@ -360,6 +417,7 @@
             return "☁️";
         }
 
+        // 25℃基準の危険度判定
         function getRiskInfo(temp, periodLabel) {
             const TARGET = 25;
             const diff = Math.abs(temp - TARGET);
@@ -378,170 +436,287 @@
                     level: 1,
                     label: "🟡 注意",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: `${prefix}${isHigh ? 'やや高め。保冷材追加を検討。' : 'やや低め。保温対策を検討。'}`
+                    advice: `${prefix}${isHigh ? 'やや高め。保冷材追加を推奨。' : 'やや低め。保温対策を推奨。'}`
                 };
             } else if (diff <= 15) {
                 return {
                     level: 2,
                     label: "🟠 警戒",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: `${prefix}${isHigh ? '暑さ警戒！保冷材同梱・発泡箱推奨。' : '寒さ警戒！カイロ同梱・保温材強化。'}`
+                    advice: `${prefix}${isHigh ? '暑さ警戒！保冷材同梱・発泡箱必須。' : '寒さ警戒！カイロ同梱・保温強化。'}`
                 };
             } else if (diff <= 20) {
                 return {
                     level: 3,
                     label: "🔴 厳重警戒",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: `${prefix}${isHigh ? '猛暑リスク高！保冷強化・速達便検討。' : '極寒リスク高！カイロ複数＋保温箱必須。'}`
+                    advice: `${prefix}${isHigh ? '猛暑リスク高！速達・クール便検討。' : '極寒リスク高！保温材重装が必須。'}`
                 };
             } else {
                 return {
                     level: 4,
-                    label: "🟣 危険 (限界突破)",
+                    label: "🟣 危険 (限界超え)",
                     diffText: `最大差: ${isHigh ? '+' : '-'}${diff.toFixed(1)}℃`,
-                    advice: `${prefix}環境限界超過！発送日延期を強く推奨。`
+                    advice: `${prefix}環境限界超。この日の発送は回避を推奨。`
                 };
             }
         }
 
+        // Open-Meteo API (16日間予報)
         async function fetchWeather(lat, lon) {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&forecast_days=16&timezone=Asia%2FTokyo`;
             const response = await fetch(url);
             if (!response.ok) throw new Error("天気データの取得に失敗しました");
             return await response.json();
         }
 
         function formatDate(dateObj) {
-            return `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+            const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
+            return `${dateObj.getMonth() + 1}/${dateObj.getDate()}(${dayNames[dateObj.getDay()]})`;
         }
 
-        async function updateDashboard() {
-            const shipOffset = parseInt(document.getElementById("shipDateSelect").value);
-            const today = new Date();
-            
-            const shipDate = new Date();
-            shipDate.setDate(today.getDate() + shipOffset);
+        // 初期化＆全都市データ読み込み
+        async function initApp() {
+            // お届け先セレクト作成
+            const destSelect = document.getElementById("destSelect");
+            DESTINATIONS.forEach(dest => {
+                const opt = document.createElement("option");
+                opt.value = dest.id;
+                opt.textContent = `【${dest.region}】${dest.city} (輸送${dest.leadDays}日間)`;
+                destSelect.appendChild(opt);
+            });
 
-            // 1. 埼玉の天気取得
-            let saitamaData = null;
+            // 最短発送日（明日）のラベルセット
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById("earliestShipDateLabel").textContent = `明日 (${formatDate(tomorrow)})`;
+
+            // データ一括取得
             try {
-                saitamaData = await fetchWeather(SAITAMA.lat, SAITAMA.lon);
-                const sMax = saitamaData.daily.temperature_2m_max[shipOffset];
-                const sMin = saitamaData.daily.temperature_2m_min[shipOffset];
-                const sCode = saitamaData.daily.weathercode[shipOffset];
+                const saitamaPromise = fetchWeather(SAITAMA.lat, SAITAMA.lon);
+                const destPromises = DESTINATIONS.map(d => fetchWeather(d.lat, d.lon));
 
-                document.getElementById("originWeather").innerHTML = `
-                    <div>
-                        <span style="font-size:0.85rem; color:var(--text-muted);">発送日 (${formatDate(shipDate)}) の予想天気</span>
-                        <div class="temp-display" style="margin-top:4px;">
-                            <span class="temp-main">${Math.round(sMax)}℃</span>
-                            <span class="temp-range">/ 最低 ${Math.round(sMin)}℃</span>
-                        </div>
-                    </div>
-                    <div style="font-size:2.4rem;">${getWeatherIcon(sCode)}</div>
-                `;
-            } catch (err) {
-                document.getElementById("originWeather").innerHTML = `<span style="color:red;">埼玉の天気取得エラー</span>`;
-            }
+                const [saitamaData, ...destResults] = await Promise.all([saitamaPromise, ...destPromises]);
 
-            const destGrid = document.getElementById("destGrid");
-            destGrid.innerHTML = `<div class="loading"><div class="spinner"></div>全日程の予報をリスク解析中...</div>`;
-
-            try {
-                const promises = DESTINATIONS.map(dest => fetchWeather(dest.lat, dest.lon));
-                const results = await Promise.all(promises);
-
-                let cardsHtml = "";
-
-                DESTINATIONS.forEach((dest, index) => {
-                    const data = results[index];
-                    const arrivalDayIndex = shipOffset + dest.leadDays;
-
-                    if (arrivalDayIndex >= data.daily.time.length) {
-                        cardsHtml += `<div class="dest-card"><strong>${dest.city}</strong>: 予報期間外</div>`;
-                        return;
-                    }
-
-                    // 到着日の天気・気温
-                    const arrivalDateStr = data.daily.time[arrivalDayIndex];
-                    const arrivalDate = new Date(arrivalDateStr);
-                    const arrivalMaxTemp = data.daily.temperature_2m_max[arrivalDayIndex];
-                    const arrivalMinTemp = data.daily.temperature_2m_min[arrivalDayIndex];
-                    const weatherCode = data.daily.weathercode[arrivalDayIndex];
-
-                    // 【新規機能】全行程（発送日〜到着日）のリスク最大値を評価
-                    let maxRiskLevel = -1;
-                    let worstTemp = arrivalMaxTemp;
-                    let worstPeriodLabel = "";
-
-                    for (let day = 0; day <= dest.leadDays; day++) {
-                        const currentDayIdx = shipOffset + day;
-                        // 発送日は埼玉の気温、中日・到着日は目的地の予想気温（簡易近似）を使用
-                        const dayTemp = (day === 0 && saitamaData) 
-                            ? saitamaData.daily.temperature_2m_max[currentDayIdx]
-                            : data.daily.temperature_2m_max[currentDayIdx];
-
-                        const diff = Math.abs(dayTemp - 25);
-                        let level = 0;
-                        if (diff > 20) level = 4;
-                        else if (diff > 15) level = 3;
-                        else if (diff > 10) level = 2;
-                        else if (diff > 5) level = 1;
-
-                        if (level > maxRiskLevel) {
-                            maxRiskLevel = level;
-                            worstTemp = dayTemp;
-                            if (day === 0) worstPeriodLabel = "発送日(埼玉)";
-                            else if (day === dest.leadDays) worstPeriodLabel = "到着日";
-                            else worstPeriodLabel = `輸送中(Day${day})`;
-                        }
-                    }
-
-                    const risk = getRiskInfo(worstTemp, worstPeriodLabel);
-
-                    cardsHtml += `
-                        <div class="dest-card">
-                            <div class="dest-card-header">
-                                <div class="dest-name-box">
-                                    <span class="dest-region">${dest.region}</span>
-                                    <span class="dest-city">${dest.city}</span>
-                                </div>
-                                <span class="lead-time-badge">${dest.leadDays}日後到着 (${formatDate(arrivalDate)})</span>
-                            </div>
-
-                            <div class="dest-card-body">
-                                <div class="dest-weather-icon">${getWeatherIcon(weatherCode)}</div>
-                                <div class="dest-temp-box">
-                                    <div class="dest-max-temp">${Math.round(arrivalMaxTemp)}℃</div>
-                                    <div class="dest-min-temp">到着日 最低 ${Math.round(arrivalMinTemp)}℃</div>
-                                </div>
-                            </div>
-
-                            <div class="transit-schedule">
-                                🗓️ 輸送期間: ${formatDate(shipDate)} 〜 ${formatDate(arrivalDate)} (${dest.leadDays + 1}日間)
-                            </div>
-
-                            <div class="risk-badge risk-level-${risk.level}">
-                                <div>
-                                    <div>${risk.label}</div>
-                                    <div class="risk-advice">${risk.advice}</div>
-                                </div>
-                                <div style="text-align:right; font-size:0.75rem; opacity:0.9;">
-                                    ${risk.diffText}
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                weatherCache["saitama"] = saitamaData;
+                DESTINATIONS.forEach((d, i) => {
+                    weatherCache[d.id] = destResults[i];
                 });
 
-                destGrid.innerHTML = cardsHtml;
+                // 初期ビュー描写
+                renderCalendarView();
 
             } catch (err) {
-                destGrid.innerHTML = `<div style="color:red; text-align:center; padding:20px;">データ取得中にエラーが発生しました。</div>`;
+                document.getElementById("calendarList").innerHTML = `<div style="color:red; text-align:center; padding:20px;">データ取得エラーが発生しました。リロードしてお試しください。</div>`;
             }
         }
 
-        window.addEventListener("DOMContentLoaded", updateDashboard);
+        // 10日間カレンダー描画
+        function renderCalendarView() {
+            const destId = document.getElementById("destSelect").value || "osaka";
+            const dest = DESTINATIONS.find(d => d.id === destId);
+            const destData = weatherCache[destId];
+            const saitamaData = weatherCache["saitama"];
+
+            if (!destData || !saitamaData) return;
+
+            const calendarList = document.getElementById("calendarList");
+            let html = "";
+
+            const today = new Date();
+            const minRiskDays = [];
+
+            // 向こう10日間の発送日（Day+1 〜 Day+10）を分析
+            for (let shipOffset = 1; shipOffset <= 10; shipOffset++) {
+                const shipDate = new Date(today);
+                shipDate.setDate(today.getDate() + shipOffset);
+
+                const arrivalDate = new Date(shipDate);
+                arrivalDate.setDate(shipDate.getDate() + dest.leadDays);
+
+                // 全行程（発送日〜到着日）での最大リスク計算
+                let maxRiskLevel = -1;
+                let worstTemp = 25;
+                let worstPeriodLabel = "";
+
+                for (let day = 0; day <= dest.leadDays; day++) {
+                    const currentIdx = shipOffset + day;
+                    if (currentIdx >= destData.daily.time.length) break;
+
+                    const dayTemp = (day === 0) 
+                        ? saitamaData.daily.temperature_2m_max[currentIdx]
+                        : destData.daily.temperature_2m_max[currentIdx];
+
+                    const diff = Math.abs(dayTemp - 25);
+                    let level = 0;
+                    if (diff > 20) level = 4;
+                    else if (diff > 15) level = 3;
+                    else if (diff > 10) level = 2;
+                    else if (diff > 5) level = 1;
+
+                    if (level > maxRiskLevel) {
+                        maxRiskLevel = level;
+                        worstTemp = dayTemp;
+                        if (day === 0) worstPeriodLabel = "発送日(埼玉)";
+                        else if (day === dest.leadDays) worstPeriodLabel = "到着日";
+                        else worstPeriodLabel = `輸送中(Day${day})`;
+                    }
+                }
+
+                const risk = getRiskInfo(worstTemp, worstPeriodLabel);
+                const arrivalIdx = shipOffset + dest.leadDays;
+                const arrivalMaxTemp = destData.daily.temperature_2m_max[arrivalIdx] || 0;
+                const arrivalMinTemp = destData.daily.temperature_2m_min[arrivalIdx] || 0;
+                const weatherCode = destData.daily.weathercode[arrivalIdx] || 0;
+
+                const isRecommended = risk.level <= 1;
+
+                html += `
+                    <div class="day-row-card ${isRecommended ? 'recommended' : ''}">
+                        <div class="date-box">
+                            ${isRecommended ? '<div class="best-badge">⭐ おすすめ発送日</div>' : ''}
+                            <span class="ship-date-text">発送: ${formatDate(shipDate)}</span>
+                            <span class="arrival-date-text">🚚 お届け: ${formatDate(arrivalDate)} (${dest.city})</span>
+                        </div>
+
+                        <div class="temp-summary-box">
+                            <span>${getWeatherIcon(weatherCode)} 到着地予想:</span>
+                            <span class="temp-pill">${Math.round(arrivalMaxTemp)}℃ / 最低${Math.round(arrivalMinTemp)}℃</span>
+                        </div>
+
+                        <div style="font-size:0.8rem; color:var(--text-muted);">
+                            行程内最高影響: <strong>${Math.round(worstTemp)}℃</strong>
+                        </div>
+
+                        <div class="risk-badge risk-level-${risk.level}">
+                            <div>${risk.label}</div>
+                            <div class="risk-advice-text">${risk.advice}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            calendarList.innerHTML = html;
+        }
+
+        // 全国ダッシュボード描画
+        function renderDashboardView() {
+            const shipOffset = parseInt(document.getElementById("shipDateSelect").value);
+            const saitamaData = weatherCache["saitama"];
+            const today = new Date();
+
+            const shipDate = new Date(today);
+            shipDate.setDate(today.getDate() + shipOffset);
+
+            const destGrid = document.getElementById("destGrid");
+            let cardsHtml = "";
+
+            DESTINATIONS.forEach(dest => {
+                const destData = weatherCache[dest.id];
+                const arrivalDayIndex = shipOffset + dest.leadDays;
+
+                if (!destData || arrivalDayIndex >= destData.daily.time.length) {
+                    cardsHtml += `<div class="dest-card"><strong>${dest.city}</strong>: データなし</div>`;
+                    return;
+                }
+
+                const arrivalDateStr = destData.daily.time[arrivalDayIndex];
+                const arrivalDate = new Date(arrivalDateStr);
+                const arrivalMaxTemp = destData.daily.temperature_2m_max[arrivalDayIndex];
+                const arrivalMinTemp = destData.daily.temperature_2m_min[arrivalDayIndex];
+                const weatherCode = destData.daily.weathercode[arrivalDayIndex];
+
+                let maxRiskLevel = -1;
+                let worstTemp = arrivalMaxTemp;
+                let worstPeriodLabel = "";
+
+                for (let day = 0; day <= dest.leadDays; day++) {
+                    const currentDayIdx = shipOffset + day;
+                    const dayTemp = (day === 0) 
+                        ? saitamaData.daily.temperature_2m_max[currentDayIdx]
+                        : destData.daily.temperature_2m_max[currentDayIdx];
+
+                    const diff = Math.abs(dayTemp - 25);
+                    let level = 0;
+                    if (diff > 20) level = 4;
+                    else if (diff > 15) level = 3;
+                    else if (diff > 10) level = 2;
+                    else if (diff > 5) level = 1;
+
+                    if (level > maxRiskLevel) {
+                        maxRiskLevel = level;
+                        worstTemp = dayTemp;
+                        if (day === 0) worstPeriodLabel = "発送日(埼玉)";
+                        else if (day === dest.leadDays) worstPeriodLabel = "到着日";
+                        else worstPeriodLabel = `輸送中(Day${day})`;
+                    }
+                }
+
+                const risk = getRiskInfo(worstTemp, worstPeriodLabel);
+
+                cardsHtml += `
+                    <div class="dest-card">
+                        <div class="dest-card-header">
+                            <div>
+                                <span style="font-size:0.75rem; color:var(--text-muted);">${dest.region}</span>
+                                <div class="dest-city">${dest.city}</div>
+                            </div>
+                            <span style="font-size:0.75rem; background:#f1f5f9; padding:4px 8px; border-radius:6px; font-weight:600;">
+                                ${dest.leadDays}日後到着 (${formatDate(arrivalDate)})
+                            </span>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa; padding:10px 12px; border-radius:10px; margin-bottom:10px;">
+                            <span style="font-size:2rem;">${getWeatherIcon(weatherCode)}</span>
+                            <div style="text-align:right;">
+                                <div style="font-size:1.3rem; font-weight:700;">${Math.round(arrivalMaxTemp)}℃</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">最低 ${Math.round(arrivalMinTemp)}℃</div>
+                            </div>
+                        </div>
+
+                        <div class="risk-badge risk-level-${risk.level}">
+                            <div>
+                                <div>${risk.label}</div>
+                                <div class="risk-advice-text">${risk.advice}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            destGrid.innerHTML = cardsHtml;
+        }
+
+        // タブ切り替え
+        function switchTab(tab) {
+            currentTab = tab;
+            const calendarBtn = document.getElementById("tabCalendarBtn");
+            const dashboardBtn = document.getElementById("tabDashboardBtn");
+            const calendarView = document.getElementById("calendarView");
+            const dashboardView = document.getElementById("dashboardView");
+            const calendarControls = document.getElementById("calendarControls");
+            const dashboardControls = document.getElementById("dashboardControls");
+
+            if (tab === "calendar") {
+                calendarBtn.classList.add("active");
+                dashboardBtn.classList.remove("active");
+                calendarView.classList.remove("hidden");
+                dashboardView.classList.add("hidden");
+                calendarControls.classList.remove("hidden");
+                dashboardControls.classList.add("hidden");
+                renderCalendarView();
+            } else {
+                dashboardBtn.classList.add("active");
+                calendarBtn.classList.remove("active");
+                dashboardView.classList.remove("hidden");
+                calendarView.classList.add("hidden");
+                dashboardControls.classList.remove("hidden");
+                calendarControls.classList.add("hidden");
+                renderDashboardView();
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", initApp);
     </script>
 </body>
 </html>
